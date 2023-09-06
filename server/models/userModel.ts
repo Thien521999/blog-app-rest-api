@@ -10,21 +10,20 @@ const userSchema = new mongoose.Schema(
     },
     account: {
       type: String,
-      required: [true, "Please add your email or phone"],
+      required: [true, "Please add your email"],
       trim: true,
       unique: true,
     },
     password: {
       type: String,
       required: [true, "Please add your password"],
-      trim: true,
     },
     avatar: {
       type: String,
       default:
         "https://res.cloudinary.com/dmj3asaf3/image/upload/v1658227110/ioana-ye-auZEhgtzF7o-unsplash_qo2xdh.jpg",
     },
-    rolr: {
+    role: {
       type: String,
       default: "user", // admin
     },
