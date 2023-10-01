@@ -1,12 +1,13 @@
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import jwt_decode from "jwt-decode";
 import {
   generateAccessToken,
   generateActiveToken,
   generateRefreshToken,
 } from "../config/generateToken";
-import { IDecodedToken, IUser } from "../config/interface";
+import { IDecodedToken, IUser, IUserParams } from "../config/interface";
 import sendEmail from "../config/sendMail";
 import { sendSMS } from "../config/sendSMS";
 import { validPhone, validateEmail } from "../middleware/valid";
@@ -107,7 +108,7 @@ const authCtrl = {
   },
   refreshToken: async (req: Request, res: Response) => {
     try {
-      const rf_token = req.cookies.refreshtoken;
+      const rf_token = req.body.refreshToken;
       if (!rf_token) return res.status(400).json({ msg: "Please login now!" });
 
       const decoded = <IDecodedToken>(
@@ -122,7 +123,39 @@ const authCtrl = {
 
       const access_token = generateAccessToken({ id: user._id });
 
-      return res.json({ access_token });
+      return res.json({ access_token, user });
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  googleLogin: async (req: Request, res: Response) => {
+    try {
+      const { access_token } = req.body;
+
+      const decoded = jwt_decode(access_token);
+
+      const { email, email_verified, name, picture }: any = decoded;
+
+      if (!email_verified)
+        return res.status(500).json({ msg: "Email verification failed!" });
+
+      const password = email + "your google secret password";
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      const user = await Users.findOne({ account: email });
+      if (user) {
+        loginUser(user, password, res);
+      } else {
+        const user: IUserParams = {
+          name,
+          account: email,
+          password: passwordHash,
+          avatar: picture,
+          type: "login",
+        };
+
+        registerUser(user, res);
+      }
     } catch (err: any) {
       return res.status(500).json({ msg: err.message });
     }
@@ -140,16 +173,34 @@ export const loginUser = async (
   const access_token = generateAccessToken({ id: user._id });
   const refresh_token = generateRefreshToken({ id: user._id });
 
-  res.cookie("refreshtoken", refresh_token, {
-    httpOnly: true,
-    path: `/api/refresh_token`,
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30days
-  });
+  // res.cookie("refreshtoken", refresh_token, {
+  //   httpOnly: true,
+  //   path: `/api/refresh_token`,
+  //   maxAge: 30 * 24 * 60 * 60 * 1000, // 30days
+  //   domain: "localhost",
+  //   secure: false,
+  // });
 
   res.json({
     msg: "Login Success!",
     access_token,
+    refresh_token,
     user: { ...user._doc, password: "" },
+  });
+};
+
+export const registerUser = async (user: IUserParams, res: Response) => {
+  const newUser = new Users(user);
+  await newUser.save();
+
+  const access_token = generateAccessToken({ id: newUser._id });
+  const refresh_token = generateRefreshToken({ id: newUser._id });
+
+  res.json({
+    msg: "Login Success!",
+    access_token,
+    refresh_token,
+    user: { ...newUser._doc, password: "" },
   });
 };
 
