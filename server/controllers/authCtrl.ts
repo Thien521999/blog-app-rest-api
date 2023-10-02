@@ -160,6 +160,35 @@ const authCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+  facebookLogin: async (req: Request, res: Response) => {
+    try {
+      const { accessToken, userID } = req.body;
+
+      const URL = `https://graph.facebook.com/v3.0/${userID}/?fields=id,name,email,picture&access_token=${accessToken}`;
+      const response = await fetch(URL);
+      const { email, name, picture } = await response.json();
+
+      const password = email + "your facebook secret password";
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      const user = await Users.findOne({ account: email });
+      if (user) {
+        loginUser(user, password, res);
+      } else {
+        const user: IUserParams = {
+          name,
+          account: email,
+          password: passwordHash,
+          avatar: picture.data.url,
+          type: "login",
+        };
+
+        registerUser(user, res);
+      }
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
 };
 
 export const loginUser = async (
