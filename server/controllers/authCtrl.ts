@@ -9,7 +9,7 @@ import {
 } from "../config/generateToken";
 import { IDecodedToken, IUser, IUserParams } from "../config/interface";
 import sendEmail from "../config/sendMail";
-import { sendSMS } from "../config/sendSMS";
+import { sendSMS, smsOTP, smsVerify } from "../config/sendSMS";
 import { validPhone, validateEmail } from "../middleware/valid";
 import Users from "../models/userModel";
 
@@ -180,6 +180,48 @@ const authCtrl = {
           account: email,
           password: passwordHash,
           avatar: picture.data.url,
+          type: "login",
+        };
+
+        registerUser(user, res);
+      }
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  loginSMS: async (req: Request, res: Response) => {
+    try {
+      const { phone } = req.body;
+
+      const data = await smsOTP(phone, "sms");
+      if (data) {
+        res.json(data);
+      } else {
+        return res.status(400).json({ msg: "Phone invalid!" });
+      }
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  smsVerify: async (req: Request, res: Response) => {
+    try {
+      const { phone, code } = req.body;
+
+      const data: any = await smsVerify(phone, code);
+      if (!data.valid)
+        return res.status(400).json({ msg: "Invalid Authentication." });
+
+      const password = phone + "your phone secret password";
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      const user = await Users.findOne({ account: phone });
+      if (user) {
+        loginUser(user, password, res);
+      } else {
+        const user: IUserParams = {
+          name: phone,
+          account: phone,
+          password: passwordHash,
           type: "login",
         };
 
