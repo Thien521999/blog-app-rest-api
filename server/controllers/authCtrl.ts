@@ -151,7 +151,7 @@ const authCtrl = {
           account: email,
           password: passwordHash,
           avatar: picture,
-          type: "login",
+          type: "google",
         };
 
         registerUser(user, res);
@@ -180,7 +180,7 @@ const authCtrl = {
           account: email,
           password: passwordHash,
           avatar: picture.data.url,
-          type: "login",
+          type: "facebook",
         };
 
         registerUser(user, res);
@@ -222,7 +222,7 @@ const authCtrl = {
           name: phone,
           account: phone,
           password: passwordHash,
-          type: "login",
+          type: "sms",
         };
 
         registerUser(user, res);

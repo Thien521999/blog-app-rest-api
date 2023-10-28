@@ -1,8 +1,8 @@
-import express from "express";
-import cors from "cors";
 import cookieParser from "cookie-parser";
-import morgan from "morgan";
+import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
+import morgan from "morgan";
 import routes from "./routes/index";
 dotenv.config();
 
@@ -16,6 +16,8 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api", routes.authRouter);
+app.use("/api", routes.userRouter);
+app.use("/api", routes.categoryRouter);
 
 // Database
 import "./config/database";
