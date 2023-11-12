@@ -1,10 +1,18 @@
 import { Request, Response } from "express";
 import { IReqAuth } from "../config/interface";
 import Blog from "../models/blogModel";
+import mongoose from "mongoose";
+
+const Pagination = (req: IReqAuth) => {
+  const page = Number(req.query.page) * 1 || 1;
+  const limit = Number(req.query.limit) * 1 || 4;
+  const skip = (page - 1) * limit;
+
+  return { page, limit, skip };
+};
 
 const blogCtrl = {
   createBlog: async (req: IReqAuth, res: Response) => {
-    console.log("req", req);
     if (!req.user) {
       res.status(400).json({
         msg: "Invalid Authentication!",
@@ -97,6 +105,91 @@ const blogCtrl = {
       ]);
 
       res.status(200).json(blogs);
+    } catch (err: any) {
+      return res.status(500).json({
+        msg: err.message,
+      });
+    }
+  },
+  getBlogByCategoryId: async (req: Request, res: Response) => {
+    const { page, limit, skip } = Pagination(req);
+
+    try {
+      // console.log("---req----", req);
+      const categoryId = req.params.category_id;
+      console.log("---categoryId--------", categoryId);
+
+      if (typeof categoryId !== "string") {
+        throw new Error("Category ID must be a string");
+      }
+      const Data = await Blog.aggregate([
+        {
+          $facet: {
+            totalData: [
+              {
+                $match: {
+                  category: new mongoose.Types.ObjectId(categoryId),
+                },
+              },
+              {
+                $lookup: {
+                  from: "categories",
+                  localField: "category", // Trong trường hợp này, bạn muốn sử dụng trường "category" trong collection "Blog" để so sánh với trường "_id" trong collection "categories".
+                  foreignField: "_id",
+                  as: "category", //Kết quả của $lookup sẽ được lưu vào một trường mới có tên là "category" trong collection "Blog".
+                },
+              },
+              // array => object
+              {
+                $unwind: "$category",
+              },
+              {
+                $sort: { createdAt: -1 }, //giá trị -1 cho trường này, nó sẽ sắp xếp theo thứ tự giảm dần (tức là từ lớn đến nhỏ), nghĩa là bản ghi mới nhất sẽ được đặt lên trên cùng.
+              }, // 1: tăng dần
+              {
+                $skip: skip,
+              },
+              {
+                $limit: limit,
+              },
+            ],
+            totalCount: [
+              {
+                $match: {
+                  category: new mongoose.Types.ObjectId(categoryId),
+                },
+              },
+              {
+                $count: "count",
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            count: {
+              $arrayElemAt: ["$totalCount.count", 0],
+            },
+            totalData: 1,
+          },
+        },
+      ]);
+
+      console.log("Data", Data);
+
+      const blogs = Data[0].totalData;
+      const count = Data[0].count;
+
+      // Pagination
+      let total = 0;
+
+      if (count % limit === 0) {
+        total = count / limit;
+      } else {
+        total = Math.floor(count / limit) + 1;
+      }
+
+      res.status(200).json({ blogs, total });
     } catch (err: any) {
       return res.status(500).json({
         msg: err.message,
