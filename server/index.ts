@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import routes from "./routes/index";
+import { errorHandlingMiddleware } from "./middleware/errorHandlingMiddleware";
 dotenv.config();
 
 // Middleware
@@ -13,6 +14,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(morgan("dev"));
 app.use(cookieParser());
+
+// Middleware xử lý loi tap trung. trong day se su ly nhieu thang nhu xu ly logic, push noification, ...
+app.use(errorHandlingMiddleware);
 
 // Routes
 app.use("/api", routes.authRouter);

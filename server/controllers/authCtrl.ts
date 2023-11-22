@@ -20,6 +20,7 @@ const authCtrl = {
     try {
       const { name, account, password } = req.body;
 
+      // find in database
       const user = await Users.findOne({ account });
       if (user)
         return res
@@ -28,29 +29,36 @@ const authCtrl = {
 
       const passwordHash = await bcrypt.hash(password, 12);
 
+      // encode password
       const newUser = {
         name,
         account,
         password: passwordHash,
       };
 
+      // handle active token
       const active_token = generateActiveToken({ newUser });
       // URl không chứa được dấu .(tìm hiểu thêm)
       const replacedToken = active_token?.replace(/\./g, "~");
       const url = `${CLIENT_URL}/active/${replacedToken}`;
 
+      // check mail valid
       if (validateEmail(account)) {
+        // send email , use nodemailer
         sendEmail(account, url, "Verify your email address");
+
         return res.json({
           msg: "Success! Please check your email",
         });
       } else if (validPhone(account)) {
+        // send sms, use Twilio
         sendSMS(account, url, "Verify your phone number");
         return res.json({
           msg: "Success! Please check phone.",
         });
       }
     } catch (err: any) {
+      // next(err) //neu dùng next(err) thi expessjs se dua ve xu ly loi tap trung chinh la "Middleware xu ly loi tap trung"
       return res.status(500).json({ msg: err.message });
     }
   },

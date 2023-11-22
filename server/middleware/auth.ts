@@ -23,7 +23,7 @@ export const auth = async (
 
     req.user = user;
 
-    next();
+    next(); // di den thang ke tiep la controller
   } catch (err: any) {
     return res.status(500).json({ msg: err.message });
   }
