@@ -27,7 +27,7 @@ const authCtrl = {
           .status(400)
           .json({ msg: "Email or Phone number already exists." });
 
-      const passwordHash = await bcrypt.hash(password, 12);
+      const passwordHash = await bcrypt.hash(password, 12); // ma hoa password
 
       // encode password
       const newUser = {

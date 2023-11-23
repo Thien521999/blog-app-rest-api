@@ -278,5 +278,17 @@ const blogCtrl = {
             });
         }
     }),
+    getBlog: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const blog = yield blogModel_1.default.findOne({ _id: req.params.id }).populate("user", "-password");
+            if (!blog)
+                return res.status(400).json({ msg: "Blog does not exits." });
+            return res.json(blog);
+        }
+        catch (err) {
+            console.log("---err---", err);
+            return res.status(500).json({ msg: err.message });
+        }
+    }),
 };
 exports.default = blogCtrl;

@@ -32,7 +32,7 @@ const authCtrl = {
                 return res
                     .status(400)
                     .json({ msg: "Email or Phone number already exists." });
-            const passwordHash = yield bcrypt_1.default.hash(password, 12);
+            const passwordHash = yield bcrypt_1.default.hash(password, 12); // ma hoa password
             // encode password
             const newUser = {
                 name,

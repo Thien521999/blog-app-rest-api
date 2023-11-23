@@ -278,6 +278,21 @@ const blogCtrl = {
       });
     }
   },
+  getBlog: async (req: Request, res: Response) => {
+    try {
+      const blog = await Blog.findOne({ _id: req.params.id }).populate(
+        "user",
+        "-password"
+      );
+
+      if (!blog) return res.status(400).json({ msg: "Blog does not exits." });
+
+      return res.json(blog);
+    } catch (err: any) {
+      console.log("---err---", err);
+      return res.status(500).json({ msg: err.message });
+    }
+  },
 };
 
 export default blogCtrl;
