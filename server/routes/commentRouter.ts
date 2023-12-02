@@ -8,4 +8,6 @@ router.post("/comments", auth, commentCtrl.createComment);
 
 router.get("/comments/blog/:id", commentCtrl.getComment);
 
+router.post("/reply_comment", auth, commentCtrl.replyComment);
+
 export default router;
