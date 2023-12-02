@@ -53,8 +53,22 @@ const commentCtrl = {
               {
                 $lookup: {
                   from: "users",
-                  localField: "user",
-                  foreignField: "_id",
+                  let: { user_id: "$user" },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $eq: ["$_id", "$$user_id"],
+                        },
+                      },
+                    },
+                    {
+                      $project: {
+                        name: 1,
+                        avatar: 1,
+                      },
+                    },
+                  ],
                   as: "user",
                 },
               },
@@ -70,8 +84,22 @@ const commentCtrl = {
                     {
                       $lookup: {
                         from: "users",
-                        localField: "user",
-                        foreignField: "_id",
+                        let: { user_id: "$user" },
+                        pipeline: [
+                          {
+                            $match: {
+                              $expr: {
+                                $eq: ["$_id", "$$user_id"],
+                              },
+                            },
+                          },
+                          {
+                            $project: {
+                              name: 1,
+                              avatar: 1,
+                            },
+                          },
+                        ],
                         as: "user",
                       },
                     },
@@ -79,8 +107,22 @@ const commentCtrl = {
                     {
                       $lookup: {
                         from: "users",
-                        localField: "reply_user",
-                        foreignField: "_id",
+                        let: { user_id: "$reply_user" },
+                        pipeline: [
+                          {
+                            $match: {
+                              $expr: {
+                                $eq: ["$_id", "$$user_id"],
+                              },
+                            },
+                          },
+                          {
+                            $project: {
+                              name: 1,
+                              avatar: 1,
+                            },
+                          },
+                        ],
                         as: "reply_user",
                       },
                     },
@@ -121,16 +163,23 @@ const commentCtrl = {
         },
       ]);
 
+      console.log("data------", data);
+
       const comments = data[0].totalData;
       const count = data[0].count;
+
+      console.log("---count---", count);
+      console.log("---limit---", limit);
 
       let total = 0;
 
       if (count % limit === 0) {
         total = count / limit;
       } else {
-        total = Math.floor(count / limit);
+        total = Math.floor(count / limit) + 1;
       }
+
+      console.log({ comments, total });
 
       res.json({ comments, total });
     } catch (err: any) {
