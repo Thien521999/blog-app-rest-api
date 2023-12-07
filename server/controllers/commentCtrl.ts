@@ -163,13 +163,8 @@ const commentCtrl = {
         },
       ]);
 
-      console.log("data------", data);
-
       const comments = data[0].totalData;
       const count = data[0].count;
-
-      console.log("---count---", count);
-      console.log("---limit---", limit);
 
       let total = 0;
 
@@ -178,8 +173,6 @@ const commentCtrl = {
       } else {
         total = Math.floor(count / limit) + 1;
       }
-
-      console.log({ comments, total });
 
       res.json({ comments, total });
     } catch (err: any) {
@@ -214,6 +207,73 @@ const commentCtrl = {
       await newComment.save();
 
       return res.json(newComment);
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  updateComment: async (req: IReqAuth, res: Response) => {
+    if (!req.user) {
+      return res.status(400).json({ msg: "Invalid Authentication." });
+    }
+
+    try {
+      const { content } = req.body;
+
+      const comment = await Comments.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          user: req.user._id,
+        },
+        { content }
+      );
+
+      if (!comment) {
+        return res.status(400).json({ msg: "Comment does not exits." });
+      }
+
+      return res.json({ msg: "Update Success!" });
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  deleteComment: async (req: IReqAuth, res: Response) => {
+    if (!req.user) {
+      return res.status(400).json({ msg: "Invalid Authentication." });
+    }
+
+    try {
+      const comment = await Comments.findOneAndDelete({
+        _id: req.params.id,
+        $or: [
+          {
+            user: req.user?._id,
+          },
+          {
+            blog_user_id: req.user?._id,
+          },
+        ],
+      });
+
+      if (!comment) {
+        return res.status(400).json({ msg: "Comment does not exits." });
+      }
+
+      if (comment.comment_root) {
+        // delete id comment in replyCM
+        await Comments.findOneAndUpdate(
+          {
+            _id: comment.comment_root,
+          },
+          {
+            $pull: { replyCM: comment._id },
+          }
+        );
+      } else {
+        // delete all comments in replyCM
+        await Comments.deleteMany({ _id: { $in: comment.replyCM } });
+      }
+
+      return res.json({ msg: "Delete Success!" });
     } catch (err: any) {
       return res.status(500).json({ msg: err.message });
     }
