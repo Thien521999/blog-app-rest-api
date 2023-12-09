@@ -197,9 +197,7 @@ const blogCtrl = {
     const { page, limit, skip } = Pagination(req);
 
     try {
-      // console.log("---req----", req);
       const userId = req.params.id;
-      console.log("---userId--------", userId);
 
       if (typeof userId !== "string") {
         throw new Error("Category ID must be a string");

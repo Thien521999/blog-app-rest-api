@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import routes from "./routes/index";
+import { createServer } from "node:http";
+import { Server, Socket } from "socket.io";
+import { SocketServer } from "./config/socket";
 // import { errorHandlingMiddleware } from "./middleware/errorHandlingMiddleware";
 dotenv.config();
 
@@ -20,6 +23,14 @@ app.use(cookieParser());
 // Middleware xử lý loi tap trung. trong day se su ly nhieu thang nhu xu ly logic, push noification, ...
 // app.use(errorHandlingMiddleware);
 
+// Socket.io
+const server = createServer(app);
+const options: any = {
+  cors: true,
+  origins: "http://192.168.1.107:5000",
+};
+const io = new Server(server, options);
+
 // Routes
 app.use("/api", routes.authRouter);
 app.use("/api", routes.userRouter);
@@ -27,11 +38,15 @@ app.use("/api", routes.categoryRouter);
 app.use("/api", routes.blogRouter);
 app.use("/api", routes.commentRouter);
 
+io.on("connection", (socket: Socket) => {
+  SocketServer(socket);
+});
+
 // Database
 import "./config/database";
 
 // server listening
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("Server is running on port", PORT);
 });
