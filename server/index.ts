@@ -29,7 +29,7 @@ const options: any = {
   cors: true,
   origins: "http://192.168.1.107:5000",
 };
-const io = new Server(server, options);
+export const io = new Server(server, options);
 
 // Routes
 app.use("/api", routes.authRouter);
