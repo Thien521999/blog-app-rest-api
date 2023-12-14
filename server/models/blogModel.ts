@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { IBlog } from "../config/interface";
 
 const blogSchema = new mongoose.Schema(
   {
@@ -39,4 +40,4 @@ const blogSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Blog", blogSchema);
+export default mongoose.model<IBlog>("Blog", blogSchema);

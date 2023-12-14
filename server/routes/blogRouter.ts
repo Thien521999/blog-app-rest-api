@@ -10,6 +10,10 @@ router.get("/blogs/:category_id", blogCtrl.getBlogByCategoryId);
 router.get("/blogs/user/:id", blogCtrl.getBlogByUser);
 // router.get("/blog/:id", blogCtrl.getBlog);
 // router.put("/blog/:id", auth, blogCtrl.updateBlog);
-router.route("/blog/:id").get(blogCtrl.getBlog).put(auth, blogCtrl.updateBlog);
+router
+  .route("/blog/:id")
+  .get(blogCtrl.getBlog)
+  .put(auth, blogCtrl.updateBlog)
+  .delete(auth, blogCtrl.deleteBlog);
 
 export default router;
