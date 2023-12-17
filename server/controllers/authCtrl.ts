@@ -7,7 +7,12 @@ import {
   generateActiveToken,
   generateRefreshToken,
 } from "../config/generateToken";
-import { IDecodedToken, IUser, IUserParams } from "../config/interface";
+import {
+  IDecodedToken,
+  IReqAuth,
+  IUser,
+  IUserParams,
+} from "../config/interface";
 import sendEmail from "../config/sendMail";
 import { sendSMS, smsOTP, smsVerify } from "../config/sendSMS";
 import { validPhone, validateEmail } from "../middleware/valid";
@@ -105,10 +110,18 @@ const authCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
-  logout: async (req: Request, res: Response) => {
+  logout: async (req: IReqAuth, res: Response) => {
+    if (!req.user)
+      return res.status(400).json({ msg: "Invalid Authentication!" });
+
     try {
       res.clearCookie("refreshtoken", { path: `/api/refresh_token` });
-
+      await Users.findOneAndUpdate(
+        { _id: req.user._id },
+        {
+          rf_token: "",
+        }
+      );
       return res.json({ msg: "Logged out" });
     } catch (err: any) {
       return res.status(500).json({ msg: err.message });
@@ -116,20 +129,37 @@ const authCtrl = {
   },
   refreshToken: async (req: Request, res: Response) => {
     try {
-      const rf_token = req.body.refreshToken;
+      const rf_token = req.body.refresh_token;
       if (!rf_token) return res.status(400).json({ msg: "Please login now!" });
 
       const decoded = <IDecodedToken>(
         jwt.verify(rf_token, `${process.env.REFRESH_TOKEN_SECRET}`)
       );
+
       if (!decoded.id)
         return res.status(400).json({ msg: "Please login now!" });
 
-      const user = await Users.findById(decoded.id).select("-password");
+      const user = await Users.findById(decoded.id).select(
+        "-password +rf_token"
+      );
       if (!user)
         return res.status(400).json({ msg: "This account does not exist." });
 
+      // console.log({ rf_token, "user.rf_token": user.rf_token });
+      // if (rf_token !== user.rf_token) {
+      //   console.log("in");
+      //   return res.status(400).json({ msg: "Please login now!" });
+      // }
+
       const access_token = generateAccessToken({ id: user._id });
+      const refresh_token = generateRefreshToken({ id: user._id });
+
+      await Users.findOneAndUpdate(
+        { _id: user._id },
+        {
+          rf_token: refresh_token,
+        }
+      );
 
       return res.json({ access_token, user });
     } catch (err: any) {
@@ -260,6 +290,13 @@ export const loginUser = async (
   //   secure: false,
   // });
 
+  await Users.findOneAndUpdate(
+    { _id: user._id },
+    {
+      rf_token: refresh_token,
+    }
+  );
+
   res.json({
     msg: "Login Success!",
     access_token,
@@ -270,10 +307,12 @@ export const loginUser = async (
 
 export const registerUser = async (user: IUserParams, res: Response) => {
   const newUser = new Users(user);
-  await newUser.save();
 
   const access_token = generateAccessToken({ id: newUser._id });
   const refresh_token = generateRefreshToken({ id: newUser._id });
+
+  newUser.rf_token = refresh_token;
+  await newUser.save();
 
   res.json({
     msg: "Login Success!",

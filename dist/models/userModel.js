@@ -33,6 +33,10 @@ const userSchema = new mongoose_1.default.Schema({
         type: String,
         default: "register",
     },
+    rf_token: {
+        type: String,
+        select: false,
+    },
 }, {
     timestamps: true,
 });

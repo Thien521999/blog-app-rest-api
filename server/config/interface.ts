@@ -8,6 +8,7 @@ export interface IUser extends Document {
   avartar: string;
   role: string;
   type: string;
+  rf_token?: string;
   _doc: object;
 }
 

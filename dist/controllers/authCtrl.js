@@ -104,8 +104,13 @@ const authCtrl = {
         }
     }),
     logout: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!req.user)
+            return res.status(400).json({ msg: "Invalid Authentication!" });
         try {
             res.clearCookie("refreshtoken", { path: `/api/refresh_token` });
+            yield userModel_1.default.findOneAndUpdate({ _id: req.user._id }, {
+                rf_token: "",
+            });
             return res.json({ msg: "Logged out" });
         }
         catch (err) {
@@ -114,16 +119,25 @@ const authCtrl = {
     }),
     refreshToken: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const rf_token = req.body.refreshToken;
+            const rf_token = req.body.refresh_token;
             if (!rf_token)
                 return res.status(400).json({ msg: "Please login now!" });
             const decoded = (jsonwebtoken_1.default.verify(rf_token, `${process.env.REFRESH_TOKEN_SECRET}`));
             if (!decoded.id)
                 return res.status(400).json({ msg: "Please login now!" });
-            const user = yield userModel_1.default.findById(decoded.id).select("-password");
+            const user = yield userModel_1.default.findById(decoded.id).select("-password +rf_token");
             if (!user)
                 return res.status(400).json({ msg: "This account does not exist." });
+            // console.log({ rf_token, "user.rf_token": user.rf_token });
+            // if (rf_token !== user.rf_token) {
+            //   console.log("in");
+            //   return res.status(400).json({ msg: "Please login now!" });
+            // }
             const access_token = (0, generateToken_1.generateAccessToken)({ id: user._id });
+            const refresh_token = (0, generateToken_1.generateRefreshToken)({ id: user._id });
+            yield userModel_1.default.findOneAndUpdate({ _id: user._id }, {
+                rf_token: refresh_token,
+            });
             return res.json({ access_token, user });
         }
         catch (err) {
@@ -240,6 +254,9 @@ const loginUser = (user, password, res) => __awaiter(void 0, void 0, void 0, fun
     //   domain: "localhost",
     //   secure: false,
     // });
+    yield userModel_1.default.findOneAndUpdate({ _id: user._id }, {
+        rf_token: refresh_token,
+    });
     res.json({
         msg: "Login Success!",
         access_token,
@@ -250,9 +267,10 @@ const loginUser = (user, password, res) => __awaiter(void 0, void 0, void 0, fun
 exports.loginUser = loginUser;
 const registerUser = (user, res) => __awaiter(void 0, void 0, void 0, function* () {
     const newUser = new userModel_1.default(user);
-    yield newUser.save();
     const access_token = (0, generateToken_1.generateAccessToken)({ id: newUser._id });
     const refresh_token = (0, generateToken_1.generateRefreshToken)({ id: newUser._id });
+    newUser.rf_token = refresh_token;
+    yield newUser.save();
     res.json({
         msg: "Login Success!",
         access_token,

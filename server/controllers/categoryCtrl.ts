@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { IReqAuth } from "../config/interface";
 import Categories from "../models/categoryModel";
+import Blog from "../models/blogModel";
 
 const categoryCtrl = {
   createCategory: async (req: IReqAuth, res: Response) => {
@@ -82,7 +83,15 @@ const categoryCtrl = {
       return res.status(400).json({ msg: "Invalid Authentication!" });
 
     try {
-      await Categories.findByIdAndDelete(req.params.id);
+      const blog = await Blog.findOne({ category: req.params.id });
+      if (blog)
+        return res.status(400).json({
+          msg: "Can not delete! In this category also exist blogs.",
+        });
+
+      const category = await Categories.findByIdAndDelete(req.params.id);
+      if (!category)
+        return res.status(400).json({ msg: "Category does not exists!" });
 
       return res.status(200).json({ msg: "Delete Success!" });
     } catch (err: any) {

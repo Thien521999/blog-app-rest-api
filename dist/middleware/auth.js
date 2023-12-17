@@ -22,8 +22,8 @@ const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () 
             return res.status(400).json({ msg: "Invalid Authentication!" });
         const decoded = (jsonwebtoken_1.default.verify(token, `${process.env.ACCESS_TOKEN_SECRET}`));
         if (!decoded)
-            return res.status(400).json({ msg: "Invalid Authentication!kkk" });
-        const user = yield userModel_1.default.findOne({ _id: decoded.id });
+            return res.status(400).json({ msg: "Invalid Authentication!" });
+        const user = yield userModel_1.default.findOne({ _id: decoded.id }).select("-password");
         if (!user)
             return res.status(400).json({ msg: "User does not exist." });
         req.user = user;
