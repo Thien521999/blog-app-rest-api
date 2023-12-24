@@ -130,6 +130,7 @@ const authCtrl = {
   refreshToken: async (req: Request, res: Response) => {
     try {
       const rf_token = req.body.refresh_token;
+      console.log("rf_token-------", rf_token);
       if (!rf_token) return res.status(400).json({ msg: "Please login now!" });
 
       const decoded = <IDecodedToken>(
@@ -264,6 +265,44 @@ const authCtrl = {
         };
 
         registerUser(user, res);
+      }
+    } catch (err: any) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  forgotPassword: async (req: Request, res: Response) => {
+    try {
+      const { account } = req.body;
+      const user = await Users.findOne({ account });
+      if (!user)
+        return res.status(400).json({ msg: "This account does not exist!" });
+
+      if (user.type !== "register") {
+        return res.status(400).json({
+          msg: `Quick login account this ${user.type} can't use this function.`,
+        });
+      }
+
+      const access_token = generateAccessToken({ id: user.id });
+
+      // URl không chứa được dấu .(tìm hiểu thêm)
+      const replacedToken = access_token?.replace(/\./g, "~");
+
+      const url = `${CLIENT_URL}/reset_password/${replacedToken}`;
+      // const url = `${CLIENT_URL}/reset_password/${access_token}`;
+
+      if (validPhone(account)) {
+        sendSMS(account, url, "Forgot password");
+
+        return res.status(200).json({
+          msg: "Success! Please check your phone",
+        });
+      } else if (validateEmail(account)) {
+        sendEmail(account, url, "Forgot password");
+
+        return res.status(200).json({
+          msg: "Success! Please check your email",
+        });
       }
     } catch (err: any) {
       return res.status(500).json({ msg: err.message });

@@ -350,6 +350,46 @@ const blogCtrl = {
       });
     }
   },
+  searchBlogs: async (req: Request, res: Response) => {
+    try {
+      const blogs = await Blog.aggregate([
+        {
+          $search: {
+            index: "searchTitle",
+            autocomplete: {
+              query: `${req.query.title}`,
+              path: "title",
+            },
+          },
+        },
+        {
+          $sort: { createdAt: -1 },
+        },
+        {
+          $limit: 5,
+        },
+        {
+          $project: {
+            title: 1,
+            description: 1,
+            thumbnail: 1,
+            createdAt: 1,
+          },
+        },
+      ]);
+
+      if (!blogs)
+        return res.status(400).json({
+          msg: "No Blogs",
+        });
+
+      res.json(blogs);
+    } catch (err: any) {
+      return res.status(500).json({
+        msg: err.message,
+      });
+    }
+  },
 };
 
 export default blogCtrl;

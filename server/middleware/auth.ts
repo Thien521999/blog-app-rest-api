@@ -9,7 +9,9 @@ export const auth = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.header("Authorization");
+    console.log("----req.body---", req.body);
+    const token = req.header("Authorization") || req.body.token;
+    console.log("token---", token);
     if (!token) return res.status(400).json({ msg: "Invalid Authentication!" });
 
     const decoded = <IDecodedToken>(

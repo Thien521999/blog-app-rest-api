@@ -16,4 +16,6 @@ router
   .put(auth, blogCtrl.updateBlog)
   .delete(auth, blogCtrl.deleteBlog);
 
+router.get("/search/blogs", blogCtrl.searchBlogs);
+
 export default router;

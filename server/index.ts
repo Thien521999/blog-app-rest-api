@@ -32,11 +32,12 @@ const options: any = {
 export const io = new Server(server, options);
 
 // Routes
-app.use("/api", routes.authRouter);
-app.use("/api", routes.userRouter);
-app.use("/api", routes.categoryRouter);
-app.use("/api", routes.blogRouter);
-app.use("/api", routes.commentRouter);
+app.use("/api", routes);
+// app.use("/api", routes.authRouter);
+// app.use("/api", routes.userRouter);
+// app.use("/api", routes.categoryRouter);
+// app.use("/api", routes.blogRouter);
+// app.use("/api", routes.commentRouter);
 
 io.on("connection", (socket: Socket) => {
   SocketServer(socket);

@@ -10,7 +10,7 @@ export const generateActiveToken = (payload: object) => {
 // Access token có thời gian sống ngắn, thường chỉ vài phút hoặc giờ.
 export const generateAccessToken = (payload: object) => {
   return jwt.sign(payload, `${process.env.ACCESS_TOKEN_SECRET}`, {
-    expiresIn: "15s", //15 phút
+    expiresIn: "15m", //15 phút
   });
 };
 
