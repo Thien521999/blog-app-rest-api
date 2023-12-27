@@ -60,14 +60,17 @@ import "./config/database";
 // let a = process.env.NODE_ENV;
 // let b = app.get("env");
 
+console.log("process.env.NODE_ENV", process.env.NODE_ENV);
 // server listening
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "production") {
+  console.log("tren");
   // moi truong production (cu the la dng support Render.com)
   const PORT = process.env.PORT;
   server.listen(PORT, () => {
     console.log("Server is running on port(production)", PORT);
   });
 } else {
+  console.log("duoi");
   // moi truong local dev
   const PORT = process.env.PORT || 5000;
   server.listen(PORT, () => {
