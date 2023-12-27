@@ -17,4 +17,5 @@ router.post("/google_login", authCtrl_1.default.googleLogin);
 router.post("/facebook_login", authCtrl_1.default.facebookLogin);
 router.post("/login_sms", authCtrl_1.default.loginSMS);
 router.post("/sms_verify", authCtrl_1.default.smsVerify);
+router.post("/forgot_password", authCtrl_1.default.forgotPassword);
 exports.default = router;

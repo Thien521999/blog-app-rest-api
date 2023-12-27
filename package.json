@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node-dev server/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prod": "pm2 start dist/index.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -21,6 +22,7 @@
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.4",
+    "pm2": "5.2.2",
     "socket.io": "^4.7.2",
     "twilio": "^4.16.0"
   },

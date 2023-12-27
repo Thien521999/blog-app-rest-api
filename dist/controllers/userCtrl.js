@@ -33,7 +33,8 @@ const userCtrl = {
     resetPassword: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.user)
             return res.status(400).json({ msg: "Invalid Authentication" });
-        if (req.user.type !== "regsiter")
+        console.log("req.user", req.user);
+        if (req.user.type !== "register")
             return res.status(400).json({
                 msg: `Quick login account with ${req.user.type} can't use this function`,
             });

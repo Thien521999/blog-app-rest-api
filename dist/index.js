@@ -1,7 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = void 0;
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -29,23 +31,37 @@ app.use((0, cookie_parser_1.default)());
 // Socket.io
 const server = (0, node_http_1.createServer)(app);
 const options = {
-    cors: true,
-    origins: "http://192.168.1.107:5000",
+  cors: true,
+  origins: "http://192.168.1.107:5000",
 };
 exports.io = new socket_io_1.Server(server, options);
 // Routes
-app.use("/api", index_1.default.authRouter);
-app.use("/api", index_1.default.userRouter);
-app.use("/api", index_1.default.categoryRouter);
-app.use("/api", index_1.default.blogRouter);
-app.use("/api", index_1.default.commentRouter);
+app.use("/api", index_1.default);
+// app.use("/api", routes.authRouter);
+// app.use("/api", routes.userRouter);
+// app.use("/api", routes.categoryRouter);
+// app.use("/api", routes.blogRouter);
+// app.use("/api", routes.commentRouter);
 exports.io.on("connection", (socket) => {
-    (0, socket_1.SocketServer)(socket);
+  (0, socket_1.SocketServer)(socket);
 });
 // Database
 require("./config/database");
+
+// Production Deploy
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static("index.html"));
+//   app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../index.html"));
+//   });
+// }
+// test mt đang chay
+// NODE_ENV: bien mt co san trong nodeJs
+// let a = process.env.NODE_ENV;
+// let b = app.get("env");
+
 // server listening
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    console.log("Server is running on port", PORT);
+  console.log("Server is running on port", PORT);
 });

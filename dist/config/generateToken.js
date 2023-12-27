@@ -15,7 +15,7 @@ exports.generateActiveToken = generateActiveToken;
 // Access token có thời gian sống ngắn, thường chỉ vài phút hoặc giờ.
 const generateAccessToken = (payload) => {
     return jsonwebtoken_1.default.sign(payload, `${process.env.ACCESS_TOKEN_SECRET}`, {
-        expiresIn: "15s", //15 phút
+        expiresIn: "15m", //15 phút
     });
 };
 exports.generateAccessToken = generateAccessToken;

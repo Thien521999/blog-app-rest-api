@@ -7,6 +7,7 @@ import routes from "./routes/index";
 import { createServer } from "node:http";
 import { Server, Socket } from "socket.io";
 import { SocketServer } from "./config/socket";
+import path from "path";
 // import { errorHandlingMiddleware } from "./middleware/errorHandlingMiddleware";
 dotenv.config();
 
@@ -45,6 +46,19 @@ io.on("connection", (socket: Socket) => {
 
 // Database
 import "./config/database";
+
+// Production Deploy
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static("index.html"));
+//   app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../index.html"));
+//   });
+// }
+
+// test mt đang chay
+// NODE_ENV: bien mt co san trong nodeJs
+// let a = process.env.NODE_ENV;
+// let b = app.get("env");
 
 // server listening
 const PORT = process.env.PORT || 5000;

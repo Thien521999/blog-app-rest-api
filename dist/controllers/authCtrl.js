@@ -120,6 +120,7 @@ const authCtrl = {
     refreshToken: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const rf_token = req.body.refresh_token;
+            console.log("rf_token-------", rf_token);
             if (!rf_token)
                 return res.status(400).json({ msg: "Please login now!" });
             const decoded = (jsonwebtoken_1.default.verify(rf_token, `${process.env.REFRESH_TOKEN_SECRET}`));
@@ -234,6 +235,39 @@ const authCtrl = {
                     type: "sms",
                 };
                 (0, exports.registerUser)(user, res);
+            }
+        }
+        catch (err) {
+            return res.status(500).json({ msg: err.message });
+        }
+    }),
+    forgotPassword: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const { account } = req.body;
+            const user = yield userModel_1.default.findOne({ account });
+            if (!user)
+                return res.status(400).json({ msg: "This account does not exist!" });
+            if (user.type !== "register") {
+                return res.status(400).json({
+                    msg: `Quick login account this ${user.type} can't use this function.`,
+                });
+            }
+            const access_token = (0, generateToken_1.generateAccessToken)({ id: user.id });
+            // URl không chứa được dấu .(tìm hiểu thêm)
+            const replacedToken = access_token === null || access_token === void 0 ? void 0 : access_token.replace(/\./g, "~");
+            const url = `${CLIENT_URL}/reset_password/${replacedToken}`;
+            // const url = `${CLIENT_URL}/reset_password/${access_token}`;
+            if ((0, valid_1.validPhone)(account)) {
+                (0, sendSMS_1.sendSMS)(account, url, "Forgot password");
+                return res.status(200).json({
+                    msg: "Success! Please check your phone",
+                });
+            }
+            else if ((0, valid_1.validateEmail)(account)) {
+                (0, sendMail_1.default)(account, url, "Forgot password");
+                return res.status(200).json({
+                    msg: "Success! Please check your email",
+                });
             }
         }
         catch (err) {

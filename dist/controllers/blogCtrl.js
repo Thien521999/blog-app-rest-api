@@ -340,5 +340,44 @@ const blogCtrl = {
             });
         }
     }),
+    searchBlogs: (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const blogs = yield blogModel_1.default.aggregate([
+                {
+                    $search: {
+                        index: "searchTitle",
+                        autocomplete: {
+                            query: `${req.query.title}`,
+                            path: "title",
+                        },
+                    },
+                },
+                {
+                    $sort: { createdAt: -1 },
+                },
+                {
+                    $limit: 5,
+                },
+                {
+                    $project: {
+                        title: 1,
+                        description: 1,
+                        thumbnail: 1,
+                        createdAt: 1,
+                    },
+                },
+            ]);
+            if (!blogs)
+                return res.status(400).json({
+                    msg: "No Blogs",
+                });
+            res.json(blogs);
+        }
+        catch (err) {
+            return res.status(500).json({
+                msg: err.message,
+            });
+        }
+    }),
 };
 exports.default = blogCtrl;

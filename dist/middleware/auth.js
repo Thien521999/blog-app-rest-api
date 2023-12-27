@@ -17,7 +17,9 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.header("Authorization");
+        console.log("----req.body---", req.body);
+        const token = req.header("Authorization") || req.body.token;
+        console.log("token---", token);
         if (!token)
             return res.status(400).json({ msg: "Invalid Authentication!" });
         const decoded = (jsonwebtoken_1.default.verify(token, `${process.env.ACCESS_TOKEN_SECRET}`));
