@@ -59,21 +59,22 @@ import "./config/database";
 // NODE_ENV: bien mt co san trong nodeJs
 // let a = process.env.NODE_ENV;
 // let b = app.get("env");
+// console.log({ a, b });
 
 console.log("process.env.NODE_ENV", process.env.NODE_ENV);
 // server listening
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV === "production") {
   console.log("tren");
-  // moi truong production (cu the la dng support Render.com)
+  // moi truong production (cu the la dang support Render.com)
   const PORT = process.env.PORT;
   server.listen(PORT, () => {
-    console.log("Server is running on port(production)", PORT);
+    console.log("Production, Server is running on port", PORT);
   });
 } else {
   console.log("duoi");
   // moi truong local dev
   const PORT = process.env.PORT || 5000;
   server.listen(PORT, () => {
-    console.log("Server is running on port", PORT);
+    console.log("Dev, Server is running on port", PORT);
   });
 }

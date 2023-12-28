@@ -1,9 +1,7 @@
 "use strict";
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod };
-  };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = void 0;
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -31,8 +29,8 @@ app.use((0, cookie_parser_1.default)());
 // Socket.io
 const server = (0, node_http_1.createServer)(app);
 const options = {
-  cors: true,
-  origins: "http://192.168.1.107:5000",
+    cors: true,
+    origins: "http://192.168.1.107:5000",
 };
 exports.io = new socket_io_1.Server(server, options);
 // Routes
@@ -43,11 +41,10 @@ app.use("/api", index_1.default);
 // app.use("/api", routes.blogRouter);
 // app.use("/api", routes.commentRouter);
 exports.io.on("connection", (socket) => {
-  (0, socket_1.SocketServer)(socket);
+    (0, socket_1.SocketServer)(socket);
 });
 // Database
 require("./config/database");
-
 // Production Deploy
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static("index.html"));
@@ -59,9 +56,22 @@ require("./config/database");
 // NODE_ENV: bien mt co san trong nodeJs
 // let a = process.env.NODE_ENV;
 // let b = app.get("env");
-
+// console.log({ a, b });
+console.log("process.env.NODE_ENV", process.env.NODE_ENV);
 // server listening
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log("Server is running on port", PORT);
-});
+if (process.env.NODE_ENV === "production") {
+    console.log("tren");
+    // moi truong production (cu the la dang support Render.com)
+    const PORT = process.env.PORT;
+    server.listen(PORT, () => {
+        console.log("Production, Server is running on port", PORT);
+    });
+}
+else {
+    console.log("duoi");
+    // moi truong local dev
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+        console.log("Dev, Server is running on port", PORT);
+    });
+}
